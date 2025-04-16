@@ -41,7 +41,7 @@ Tracking progress of the API (frontend will be its own section). Not all items a
 
 ## Dev Setup & Installation
 
-**Ensure python3, pip, and npm are installed in your Linux environment.**
+**Ensure python3 and pip are installed in your Linux environment.**
 
 Clone the repository:
 
