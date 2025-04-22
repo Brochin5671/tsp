@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import os
 
-from src.routers import news
+from src.routers import news, imagery
 
 # Setup app
 PROD = os.getenv('PROD')
@@ -39,6 +39,17 @@ app = FastAPI(title='The Space Prime API',
               },
               )
 app.include_router(news.router, responses={
+                   429: {
+                       'content': {
+                           'application/json': {
+                               'example': {
+                                   'error': 'Rate limit exceeded: 10 per 1 second'
+                               }
+                           }
+                       }
+                   }}
+                   )
+app.include_router(imagery.router, responses={
                    429: {
                        'content': {
                            'application/json': {
