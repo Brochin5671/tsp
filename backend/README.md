@@ -12,6 +12,11 @@ Space news, epihermes, other info and more!
 - **/news/science/**
   - Returns space science news (astronomy, astrobiology, astrophysics, etc.)
 
+## Imagery
+
+- **/imagery/epic/**
+  - Returns images of Earth from NASA's EPIC API
+
 ## Roadmap & WIP
 
 Tracking progress of the API (frontend will be its own section). Not all items are listed, just more general ones and expecting scope-creep.
@@ -22,7 +27,7 @@ Tracking progress of the API (frontend will be its own section). Not all items a
   - [x] Science
   - [ ] Other filters
 - [ ] NASA Imagery
-  - [ ] Current Earth imagery
+  - [x] Current Earth imagery
   - [ ] Data from Mars rovers
 - [ ] Astronomy Weather
   - [ ] Light pollution estimation
