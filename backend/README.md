@@ -43,6 +43,7 @@ Tracking progress of the API (frontend will be its own section). Not all items a
 - [ ] Technical
   - [ ] Logger
   - [ ] Use PyPi
+  - [ ] Benchmarking
 
 ## Dev Setup & Installation
 
