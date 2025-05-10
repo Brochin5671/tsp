@@ -7,7 +7,7 @@ from src.models import EPICAPICollectionType, EPICAPIImageType, EPICImage, MarsP
 
 
 def get_EPIC_API_images(collection: EPICAPICollectionType, series: bool, image_type: EPICAPIImageType, image_date: date | None) -> list[EPICImage]:
-    '''The EPIC API provides information on the daily imagery collected by DSCOVR's Earth Polychromatic Imaging Camera (EPIC) instrument. Uniquely positioned at the Earth-Sun Lagrange point, EPIC provides full disc imagery of the Earth and captures unique perspectives of certain astronomical events such as lunar transits using a 2048x2048 pixel CCD (Charge Coupled Device) detector coupled to a 30-cm aperture Cassegrain telescope. This function is intended to return images and their metadata.'''
+    '''Returns images of Earth from NASA's EPIC API.'''
 
     # Exception handler for EPIC API call
     def handle_EPIC_API_exception(e):

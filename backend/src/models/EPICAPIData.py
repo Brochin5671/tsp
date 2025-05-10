@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import NamedTuple
 
 
@@ -24,7 +24,7 @@ class Quaternions(NamedTuple):
     q3: float
 
 
-class EPICAPICollectionType(Enum):
+class EPICAPICollectionType(StrEnum):
     '''Enum for EPIC API collection type.'''
     NATURAL: str = 'natural'
     ENHANCED: str = 'enhanced'
@@ -32,14 +32,14 @@ class EPICAPICollectionType(Enum):
     CLOUD: str = 'cloud'
 
 
-class EPICAPIImageType(Enum):
+class EPICAPIImageType(StrEnum):
     '''Enum for EPIC API image type.'''
     PNG: str = 'png'
     JPG: str = 'jpg'
     THUMBS: str = 'thumbs'
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EPICImage:
     '''Dataclass for extracted image metadata from the EPIC API.'''
     image: str

@@ -21,11 +21,10 @@ async def get_EPIC_API(
         description='A date string in ISO 8601 format: YYYY-MM-DD',
         alias='date')] = None
 ) -> list[EPICImage]:
-    '''Returns images of Earth from NASA's EPIC API.'''
-    print(collection, series, image_type, image_date)
-
+    '''Returns images of Earth from NASA's EPIC API.
+    The EPIC API provides information on the daily imagery collected by DSCOVR's Earth Polychromatic Imaging Camera (EPIC) instrument. Uniquely positioned at the Earth-Sun Lagrange point, EPIC provides full disc imagery of the Earth and captures unique perspectives of certain astronomical events such as lunar transits using a 2048x2048 pixel CCD (Charge Coupled Device) detector coupled to a 30-cm aperture Cassegrain telescope. This function is intended to return images and their metadata.'''
     images = get_EPIC_API_images(
-        collection.value, series, image_type.value, image_date)
+        collection, series, image_type, image_date)
     return images
 
 
