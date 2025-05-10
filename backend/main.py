@@ -8,17 +8,19 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
 import os
+from dotenv import load_dotenv
 
 from src.routers import news, imagery
 
 # Setup app
+load_dotenv()
 PROD = os.getenv('PROD')
 DEV = os.getenv('DEV')
 description = '''
 ### API for all things space
 Space news, epihermes, other info and more!
 '''
-version = '0.3.0 (v1)'
+version = '0.4.0 (v1)'
 docs_url = '/docs'
 app = FastAPI(title='The Space Prime API',
               description=description,
