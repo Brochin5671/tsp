@@ -30,9 +30,9 @@ async def get_EPIC_API(
 
 @router.get('/mars-photo')
 async def get_mars_photos(
-    rovers: Annotated[list[MarsPhotoRoverType], Query(
+    rovers: Annotated[set[MarsPhotoRoverType], Query(
         description='Filter for photos from specific rovers.')],
-    cameras: Annotated[list[MarsPhotoCameraType], Query(
+    cameras: Annotated[set[MarsPhotoCameraType], Query(
         description='Filter for photos from specific rover cameras (picks from a specific day).')] = None,
     earth_date: Annotated[date, Query(
         description='A date string in ISO 8601 format "YYYY-MM-DD", starting from the landing date up to the current maximum earth date. If both earth_date and sol aren\'t specified, latest image data is returned.')] = None,
@@ -49,7 +49,7 @@ async def get_mars_photos(
 
 @router.get('/mars-photo/meta')
 async def get_mars_photos_metadata(
-    rovers: Annotated[list[MarsPhotoRoverType], Query(
+    rovers: Annotated[set[MarsPhotoRoverType], Query(
         description='Filter for metadata from specific rovers.')],
     manifest: Annotated[bool, Query(
         description='To return photo manifests with metadata.')] = None
