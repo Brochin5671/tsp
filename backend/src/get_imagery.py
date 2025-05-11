@@ -68,6 +68,16 @@ def get_mars_photos_API_images(rovers: list[MarsPhotoRoverType], cameras: list[M
     rovers_data = json_data.get('rovers', {})
     camera_mappings = json_data.get('cameras', {})
 
+    # Modify rover parameter list
+    if MarsPhotoRoverType.ALL in rovers:
+        rovers = rovers_data.keys()
+    elif MarsPhotoRoverType.ACTIVE in rovers:
+        rovers = [name for name, rover in rovers_data.items()
+                  if rover['active']]
+    elif MarsPhotoRoverType.INACTIVE in rovers:
+        rovers = [name for name, rover in rovers_data.items()
+                  if not rover['active']]
+
     # If earth_date and sol weren't provided, get latest photos
     endpoint = 'photos'
     if earth_date is None and sol is None:
@@ -132,6 +142,16 @@ def get_mars_photos_api_metadata(rovers: list[MarsPhotoRoverType], manifest: boo
     json_data = _get_mars_rovers_json()
     rovers_data = json_data.get('rovers', {})
     camera_mappings = json_data.get('cameras', {})
+
+    # Modify rover parameter list
+    if MarsPhotoRoverType.ALL in rovers:
+        rovers = rovers_data.keys()
+    elif MarsPhotoRoverType.ACTIVE in rovers:
+        rovers = [name for name, rover in rovers_data.items()
+                  if rover['active']]
+    elif MarsPhotoRoverType.INACTIVE in rovers:
+        rovers = [name for name, rover in rovers_data.items()
+                  if not rover['active']]
 
     # Return metadata on requested rovers
     metadata_list = []

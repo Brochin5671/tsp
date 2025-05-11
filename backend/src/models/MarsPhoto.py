@@ -4,13 +4,13 @@ from enum import StrEnum, auto
 
 class MarsPhotoRoverType(StrEnum):
     '''Enum for Mars Photo API rover type.'''
+    ALL: str = auto()
+    ACTIVE: str = auto()
+    INACTIVE: str = auto()
     CURIOSITY: str = auto()
     SPIRIT: str = auto()
     OPPORTUNITY: str = auto()
     PERSEVERANCE: str = auto()
-    ACTIVE: str = 'active'
-    INACTIVE: str = 'inactive'
-    ALL: str = 'all'  # TODO: group rovers
 
 
 class MarsPhotoCameraType(StrEnum):
@@ -60,7 +60,7 @@ class MarsPhotoCamera:
     name: str
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MarsRover:
     '''Dataclass for Mars rover metadata from `mars_rovers.json`.'''
     name: str
