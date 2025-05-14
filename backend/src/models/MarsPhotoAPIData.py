@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum, auto
 
 
-class MarsPhotoRoverType(StrEnum):
+class MarsPhotoAPIRoverType(StrEnum):
     '''Enum for Mars Photo API rover type.'''
     ALL: str = auto()
     ACTIVE: str = auto()
@@ -12,8 +12,24 @@ class MarsPhotoRoverType(StrEnum):
     OPPORTUNITY: str = auto()
     PERSEVERANCE: str = auto()
 
+    @classmethod
+    def get_flags(cls) -> set[StrEnum]:
+        return {cls.ALL, cls.ACTIVE, cls.INACTIVE}
 
-class MarsPhotoCameraType(StrEnum):
+    @classmethod
+    def get_active_rovers(cls) -> set[StrEnum]:
+        return {cls.CURIOSITY, cls.PERSEVERANCE}
+
+    @classmethod
+    def get_inactive_rovers(cls) -> set[StrEnum]:
+        return {cls.SPIRIT, cls.OPPORTUNITY}
+
+    @classmethod
+    def get_rovers(cls) -> set[StrEnum]:
+        return {cls.CURIOSITY, cls.SPIRIT, cls.OPPORTUNITY, cls.PERSEVERANCE}
+
+
+class MarsPhotoAPICameraType(StrEnum):
     '''Enum for Mars Photo API camera type.'''
     FHAZ: str = auto(),
     NAVCAM: str = auto(),
@@ -52,9 +68,13 @@ class MarsPhotoCameraType(StrEnum):
     SUPERCAM_RMI: str = auto(),
     LCAM: str = auto()
 
+    def _cmp_values(self, other):
+        # Case-insensitive query param
+        return self.value, str(other).upper()
+
 
 @dataclass(kw_only=True)
-class MarsPhotoCamera:
+class MarsPhotoAPICamera:
     '''Dataclass for Mars rover camera names.'''
     short: str
     name: str
@@ -67,33 +87,33 @@ class MarsRover:
     launch_date: str
     landing_date: str
     active: bool
-    cameras: list[MarsPhotoCamera]
+    cameras: list[MarsPhotoAPICamera]
     final_sol: int | None = None
     final_date: str | None = None
     total_photos: int | None = None
 
 
 @dataclass(kw_only=True)
-class MarsPhotoMetadataManifest:
+class MarsPhotoAPIMetadataManifest:
     '''Dataclass for extracted Mars rover manifest data from the Mars Photo API.'''
     sol: int
     earth_date: str
     total_photos: int
-    cameras: list[MarsPhotoCamera]
+    cameras: list[MarsPhotoAPICamera]
 
 
 @dataclass(kw_only=True)
-class MarsPhotoMetadata:
+class MarsPhotoAPIMetadata:
     '''Dataclass for extracted Mars rover metadata from the Mars Photo API.'''
     rover: MarsRover
-    manifests: list[MarsPhotoMetadataManifest] | None = None
+    manifests: list[MarsPhotoAPIMetadataManifest] | None = None
 
 
 @dataclass(kw_only=True)
-class MarsPhoto:
+class MarsPhotoAPIImage:
     '''Dataclass for extracted image metadata from the Mars Photo API.'''
     rover_name: str
-    camera: MarsPhotoCamera
+    camera: MarsPhotoAPICamera
     image: str
     earth_date: str
     sol: int

@@ -1,3 +1,3 @@
 from .Article import Article
 from .EPICAPIData import EPICAPICollectionType, EPICAPIImageType, EPICImage
-from .MarsPhoto import MarsPhotoCamera, MarsRover, MarsPhotoRoverType, MarsPhotoCameraType, MarsPhotoCamera, MarsPhoto, MarsPhotoMetadataManifest, MarsPhotoMetadata
+from .MarsPhotoAPIData import MarsPhotoAPICamera, MarsRover, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPICamera, MarsPhotoAPIImage, MarsPhotoAPIMetadataManifest, MarsPhotoAPIMetadata
