@@ -1,5 +1,6 @@
+from collections import deque
 from typing import Annotated
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query, status
 
 from datetime import date
 
@@ -39,10 +40,9 @@ async def get_mars_photos(
     sol: Annotated[int, Query(
         description='The Martian sol (Martian day) starting from the landing date up to the current maximum sol. If both earth_date and sol aren\'t specified, latest image data is returned.',
         ge=0)] = None
-) -> list[MarsPhotoAPIImage]:
-    '''Returns a list of photos from Mars rovers using the Mars Photo API.
+) -> deque[MarsPhotoAPIImage]:
+    '''Returns images from Mars rovers using the Mars Photo API.
     The Mars Photo API is designed to collect image data gathered by NASA's Curiosity, Opportunity, Spirit, and Perseverance rovers on Mars and make it more easily available to other developers, educators, and citizen scientists. This API is maintained by Chris Cerami. https://mars-photos.herokuapp.com/explore/'''
-    # TODO: error checking with date and sol
 
     # Modify rover set used for querying if flags were used
     used_flags = rovers & MarsPhotoAPIRoverType.get_flags()
@@ -58,7 +58,13 @@ async def get_mars_photos(
             if MarsPhotoAPIRoverType.INACTIVE in used_flags:
                 rovers |= MarsPhotoAPIRoverType.get_inactive_rovers()
 
-    images = get_mars_photos_API_images(rovers, cameras, earth_date, sol)
+    try:
+        images = get_mars_photos_API_images(rovers, cameras, earth_date, sol)
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
+
     return images
 
 
@@ -67,9 +73,14 @@ async def get_mars_photos_metadata(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
         description='Filter for metadata from specific rovers.')],
     manifest: Annotated[bool, Query(
-        description='To return photo manifests with metadata.')] = None
+        description='To return photo manifests with metadata.')] = None,
+    earth_date: Annotated[date, Query(
+        description='A date string in ISO 8601 format "YYYY-MM-DD", starting from the landing date up to the current maximum earth date. If both earth_date and sol aren\'t specified, latest image data is returned.')] = None,
+    sol: Annotated[int, Query(
+        description='The Martian sol (Martian day) starting from the landing date up to the current maximum sol. If both earth_date and sol aren\'t specified, latest image data is returned.',
+        ge=0)] = None
 ):
-    '''Returns a list of Mars Rover metadata (optionally photo manifests) using the Mars Photo API.
+    '''Returns metadata from Mars rovers (optionally photo manifests) using the Mars Photo API.
     The Mars Photo API is designed to collect image data gathered by NASA's Curiosity, Opportunity, Spirit, and Perseverance rovers on Mars and make it more easily available to other developers, educators, and citizen scientists. This API is maintained by Chris Cerami. https://mars-photos.herokuapp.com/explore/'''
 
     # Modify rover set used for querying if flags were used
@@ -86,5 +97,12 @@ async def get_mars_photos_metadata(
             if MarsPhotoAPIRoverType.INACTIVE in used_flags:
                 rovers |= MarsPhotoAPIRoverType.get_inactive_rovers()
 
-    metadata = get_mars_photos_api_metadata(rovers, manifest)
+    try:
+        metadata = get_mars_photos_api_metadata(
+            rovers, manifest, earth_date, sol)
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
+
     return metadata

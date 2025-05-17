@@ -48,26 +48,37 @@ def get_EPIC_API_images(collection: EPICAPICollectionType, series: bool, image_t
     return images
 
 
-def _get_mars_rovers_json() -> dict:
-    '''Returns the JSON data from the mars_rovers.json file.'''
-    data = {}
+def _load_mars_rovers_json(rovers_only: bool = False) -> tuple[dict[str, str], dict[str, str] | None]:
+    '''Tries to load and return JSON data from the `mars_rovers.json` file.'''
+    # Try to load file, raises missing file or key errors on failure
     with open('./src/data/mars_rovers.json') as file:
         data = json.load(file)
-    return data
 
+    # Raise error if file is just "{}"
+    if not data:
+        raise RuntimeError('"mars_rovers.json" is missing data.')
 
-def _handle_mars_photos_API_exception(e):
-    '''Returns an empty dictionary on failure.'''
-    print(e)  # TODO: logging and exception handling
-    return {}
+    # Raise error if "rovers" is just "{}"
+    rovers_data = data['rovers']
+    if not rovers_data:
+        raise RuntimeError('"mars_rovers.json" is missing rover data.')
+    # Return just rover data if specified
+    if rovers_only:
+        return rovers_data, None
+
+    # Raise error if "cameras" is just "{}"
+    camera_mappings = data['cameras']
+    if not camera_mappings:
+        raise RuntimeError(
+            '"mars_rovers.json" is missing camera mappings data.')
+    return rovers_data, camera_mappings
 
 
 def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[MarsPhotoAPICameraType] | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIImage]:
-    '''Returns a list of photos from Mars rovers using the Mars Photo API.'''
+    '''Returns images from Mars rovers using the Mars Photo API.'''
 
     # Get JSON data
-    json_data = _get_mars_rovers_json()
-    rovers_data = json_data.get('rovers', {})
+    rovers_data, _ = _load_mars_rovers_json(rovers_only=True)
 
     # If earth_date and sol weren't provided, get latest photos
     endpoint = 'photos'
@@ -75,95 +86,97 @@ def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[
         endpoint = 'latest_photos'
 
     # Query data from rovers
-    session = CachedSession()
     params = {'earth_date': earth_date, 'sol': sol}
-    photos = deque()
-    for rover in rovers:
+    images = deque()
+    with CachedSession() as session:
+        for rover in rovers:
 
-        # Get set of cameras to filter for by intersecting given cameras and a rover's available cameras
-        rover_cameras = {camera.lower()
-                         for camera in rovers_data[rover]['cameras']}
-        filter_cameras = cameras & rover_cameras if cameras else None
+            # Get set of cameras to filter for by intersecting given cameras and a rover's available cameras
+            rover_cameras = {camera.lower()
+                             for camera in rovers_data[rover]['cameras']}
+            filter_cameras = cameras & rover_cameras if cameras else None
 
-        # Call API if no cameras were provided or there are cameras to filter for
-        if not cameras or filter_cameras:
-            url = f'https://mars-photos.herokuapp.com/api/v1/rovers/{rover}/{endpoint}'
-            res = request_get_json_cached(
-                url, session, params=params, exception_handler=_handle_mars_photos_API_exception)
-            data = res[endpoint]
+            # Call API if no cameras were provided or there are cameras to filter for
+            if not cameras or filter_cameras:
+                url = f'https://mars-photos.herokuapp.com/api/v1/rovers/{rover}/{endpoint}'
+                res = request_get_json_cached(url, session, params=params)
+                data = res[endpoint]
 
-            # Extract data
-            for item in data:
+                # Extract data
+                for item in data:
 
-                # Skip item if there are cameras to filter for and item's camera is not in filter
-                item_camera = item['camera']
-                camera_short = item_camera['name']
-                if cameras and camera_short.lower() not in filter_cameras:
-                    continue
+                    # Skip item if there are cameras to filter for and item's camera is not in filter
+                    item_camera = item['camera']
+                    camera_short = item_camera['name']
+                    if cameras and camera_short.lower() not in filter_cameras:
+                        continue
 
-                # Create camera object
-                camera_obj = MarsPhotoAPICamera(short=camera_short,
-                                                name=item_camera['full_name'])
-                # Create photo object
-                photo = MarsPhotoAPIImage(rover_name=item['rover']['name'],
-                                          camera=camera_obj,
-                                          image=item['img_src'],
-                                          earth_date=item['earth_date'],
-                                          sol=item['sol'])
-                photos.append(photo)
-    session.close()
-    return photos
+                    # Create objects
+                    camera_obj = MarsPhotoAPICamera(short=camera_short,
+                                                    name=item_camera['full_name'])
+                    image = MarsPhotoAPIImage(rover_name=item['rover']['name'],
+                                              camera=camera_obj,
+                                              image=item['img_src'],
+                                              earth_date=item['earth_date'],
+                                              sol=item['sol'])
+                    images.append(image)
+    return images
 
 
-def get_mars_photos_api_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: bool | None) -> list[MarsPhotoAPIMetadata]:
-    '''Returns a list of Mars Rover metadata (optionally photo manifests) using the Mars Photo API.'''
+def get_mars_photos_api_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: bool | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIMetadata]:
+    '''Returns metadata from Mars rovers (optionally photo manifests) using the Mars Photo API.'''
 
     # Get JSON data
-    json_data = _get_mars_rovers_json()
-    rovers_data = json_data.get('rovers', {})
-    camera_mappings = json_data.get('cameras', {})
+    rovers_data, camera_mappings = _load_mars_rovers_json()
 
     # Return metadata on requested rovers
-    session = CachedSession()
-    metadata_list = []
-    for rover in rovers:
-        rover_data = rovers_data[rover]
-        # Extract camera short and full names
-        cameras = [MarsPhotoAPICamera(short=camera_short, name=camera_mappings[camera_short])
-                   for camera_short in rover_data['cameras']]
-        rover_data['cameras'] = cameras
-        # Create rover metadata object
-        rover_obj = MarsRover(**rover_data)
-        metadata = MarsPhotoAPIMetadata(rover=rover_obj)
+    metadata_list = deque()
+    with CachedSession() as session:
+        for rover in rovers:
+            rover_data = rovers_data[rover]
 
-        # Add rover manifest to metadata if requested
-        if manifest:
-            url = f'https://mars-photos.herokuapp.com/api/v1/manifests/{rover}'
-            res = request_get_json_cached(
-                url, session, exception_handler=_handle_mars_photos_API_exception)
-            data = res['photo_manifest']
+            # Extract camera short and full names
+            cameras = [MarsPhotoAPICamera(short=camera_short, name=camera_mappings[camera_short])
+                       for camera_short in rover_data['cameras']]
+            rover_data['cameras'] = cameras
+            # Create metadata objects
+            rover_obj = MarsRover(**rover_data)
+            metadata = MarsPhotoAPIMetadata(rover=rover_obj)
 
-            # Extract data from manifest items
-            manifest_list = []
-            for item in data['photos']:
-                # Extract camera short and full name from manifest item
-                manifest_cameras = [MarsPhotoAPICamera(short=camera_short, name=camera_mappings[camera_short])
-                                    for camera_short in item['cameras']]
-                item['cameras'] = manifest_cameras
-                manifest_obj = MarsPhotoAPIMetadataManifest(**item)
-                manifest_list.append(manifest_obj)
-            metadata.manifests = manifest_list
+            # Add rover manifest to metadata if requested
+            if manifest:
+                url = f'https://mars-photos.herokuapp.com/api/v1/manifests/{rover}'
+                res = request_get_json_cached(url, session)
 
-        # If rover is still active, update fields to reflect current values
-        if rover_obj.active:
-            url = f'https://mars-photos.herokuapp.com/api/v1/rovers/{rover}'
-            res = request_get_json_cached(
-                url, session, exception_handler=_handle_mars_photos_API_exception)
-            data = res['rover']
-            rover_obj.final_date = data['max_date']
-            rover_obj.final_sol = data['max_sol']
-            rover_obj.total_photos = data['total_photos']
+                # Filter for specific manifests if earth_date or sol provided
+                if earth_date:
+                    data = [item for item in res['photo_manifest']['photos']
+                            if item['earth_date'] == earth_date.isoformat()]
+                elif sol is not None:
+                    data = [item for item in res['photo_manifest']['photos']
+                            if item['sol'] == sol]
+                else:
+                    data = res['photo_manifest']['photos']
 
-        metadata_list.append(metadata)
-    session.close()
+                # Extract data from manifest items
+                manifests = deque()
+                for item in data:
+                    # Extract camera short and full name from manifest item
+                    manifest_cameras = [MarsPhotoAPICamera(short=camera_short, name=camera_mappings[camera_short])
+                                        for camera_short in item['cameras']]
+                    item['cameras'] = manifest_cameras
+                    manifest = MarsPhotoAPIMetadataManifest(**item)
+                    manifests.append(manifest)
+                metadata.manifests = manifests
+
+            # If rover is still active, update fields to reflect current values
+            if rover_obj.active:
+                url = f'https://mars-photos.herokuapp.com/api/v1/rovers/{rover}'
+                res = request_get_json_cached(url, session)
+                data = res['rover']
+                rover_obj.final_date = data['max_date']
+                rover_obj.final_sol = data['max_sol']
+                rover_obj.total_photos = data['total_photos']
+
+            metadata_list.append(metadata)
     return metadata_list

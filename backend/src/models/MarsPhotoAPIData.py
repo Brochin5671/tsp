@@ -1,3 +1,4 @@
+from collections import deque
 from dataclasses import dataclass
 from enum import StrEnum, auto
 
@@ -106,7 +107,7 @@ class MarsPhotoAPIMetadataManifest:
 class MarsPhotoAPIMetadata:
     '''Dataclass for extracted Mars rover metadata from the Mars Photo API.'''
     rover: MarsRover
-    manifests: list[MarsPhotoAPIMetadataManifest] | None = None
+    manifests: deque[MarsPhotoAPIMetadataManifest] | None = None
 
 
 @dataclass(kw_only=True)
