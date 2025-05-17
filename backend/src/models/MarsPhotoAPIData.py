@@ -1,6 +1,7 @@
 from collections import deque
 from dataclasses import dataclass
 from enum import StrEnum, auto
+from typing import Self
 
 
 class MarsPhotoAPIRoverType(StrEnum):
@@ -14,19 +15,19 @@ class MarsPhotoAPIRoverType(StrEnum):
     PERSEVERANCE: str = auto()
 
     @classmethod
-    def get_flags(cls) -> set[StrEnum]:
+    def get_flags(cls) -> set[Self]:
         return {cls.ALL, cls.ACTIVE, cls.INACTIVE}
 
     @classmethod
-    def get_active_rovers(cls) -> set[StrEnum]:
+    def get_active_rovers(cls) -> set[Self]:
         return {cls.CURIOSITY, cls.PERSEVERANCE}
 
     @classmethod
-    def get_inactive_rovers(cls) -> set[StrEnum]:
+    def get_inactive_rovers(cls) -> set[Self]:
         return {cls.SPIRIT, cls.OPPORTUNITY}
 
     @classmethod
-    def get_rovers(cls) -> set[StrEnum]:
+    def get_rovers(cls) -> set[Self]:
         return {cls.CURIOSITY, cls.SPIRIT, cls.OPPORTUNITY, cls.PERSEVERANCE}
 
 
@@ -69,10 +70,6 @@ class MarsPhotoAPICameraType(StrEnum):
     SUPERCAM_RMI: str = auto(),
     LCAM: str = auto()
 
-    def _cmp_values(self, other):
-        # Case-insensitive query param
-        return self.value, str(other).upper()
-
 
 @dataclass(kw_only=True)
 class MarsPhotoAPICamera:
@@ -82,7 +79,7 @@ class MarsPhotoAPICamera:
 
 
 @dataclass(kw_only=True)
-class MarsRover:
+class MarsPhotoAPIRover:
     '''Dataclass for Mars rover metadata from `mars_rovers.json`.'''
     name: str
     launch_date: str
@@ -106,7 +103,7 @@ class MarsPhotoAPIMetadataManifest:
 @dataclass(kw_only=True)
 class MarsPhotoAPIMetadata:
     '''Dataclass for extracted Mars rover metadata from the Mars Photo API.'''
-    rover: MarsRover
+    rover: MarsPhotoAPIRover
     manifests: deque[MarsPhotoAPIMetadataManifest] | None = None
 
 

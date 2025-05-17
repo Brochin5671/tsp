@@ -10,6 +10,25 @@ from src.get_imagery import get_EPIC_API_images, get_mars_photos_API_images, get
 router = APIRouter(prefix='/imagery', tags=['imagery'])
 
 
+def _remove_rover_flags(rovers: set[MarsPhotoAPIRoverType]):
+    '''Removes flags and updates the rover set.'''
+    # Modify rover set used for querying if flags were used
+    used_flags = rovers & MarsPhotoAPIRoverType.get_flags()
+    if used_flags:
+        if MarsPhotoAPIRoverType.ALL in used_flags:
+            rovers = MarsPhotoAPIRoverType.get_rovers()
+        else:
+            # Remove flags from rover set
+            rovers -= used_flags
+            # Add active and/or inactive rovers to rover set
+            if MarsPhotoAPIRoverType.ACTIVE in used_flags:
+                rovers |= MarsPhotoAPIRoverType.get_active_rovers()
+            if MarsPhotoAPIRoverType.INACTIVE in used_flags:
+                rovers |= MarsPhotoAPIRoverType.get_inactive_rovers()
+
+    return rovers
+
+
 @router.get('/epic')
 async def get_EPIC_API(
     collection: Annotated[EPICAPICollectionType, Query(
@@ -45,23 +64,13 @@ async def get_mars_photos(
     The Mars Photo API is designed to collect image data gathered by NASA's Curiosity, Opportunity, Spirit, and Perseverance rovers on Mars and make it more easily available to other developers, educators, and citizen scientists. This API is maintained by Chris Cerami. https://mars-photos.herokuapp.com/explore/'''
 
     # Modify rover set used for querying if flags were used
-    used_flags = rovers & MarsPhotoAPIRoverType.get_flags()
-    if used_flags:
-        if MarsPhotoAPIRoverType.ALL in used_flags:
-            rovers = MarsPhotoAPIRoverType.get_rovers()
-        else:
-            # Remove flags from rover set
-            rovers -= used_flags
-            # Add active and/or inactive rovers to rover set
-            if MarsPhotoAPIRoverType.ACTIVE in used_flags:
-                rovers |= MarsPhotoAPIRoverType.get_active_rovers()
-            if MarsPhotoAPIRoverType.INACTIVE in used_flags:
-                rovers |= MarsPhotoAPIRoverType.get_inactive_rovers()
+    rovers = _remove_rover_flags(rovers)
 
+    # Try to get images from Mars Photo API
     try:
         images = get_mars_photos_API_images(rovers, cameras, earth_date, sol)
     except Exception as e:
-        print(e)
+        print(e)  # TODO: logging
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
 
@@ -71,7 +80,7 @@ async def get_mars_photos(
 @router.get('/mars-photo/meta')
 async def get_mars_photos_metadata(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
-        description='Filter for metadata from specific rovers.')],
+        description='Filter for metadata from specific rovers.')] = MarsPhotoAPIRoverType.ALL,
     manifest: Annotated[bool, Query(
         description='To return photo manifests with metadata.')] = None,
     earth_date: Annotated[date, Query(
@@ -84,24 +93,14 @@ async def get_mars_photos_metadata(
     The Mars Photo API is designed to collect image data gathered by NASA's Curiosity, Opportunity, Spirit, and Perseverance rovers on Mars and make it more easily available to other developers, educators, and citizen scientists. This API is maintained by Chris Cerami. https://mars-photos.herokuapp.com/explore/'''
 
     # Modify rover set used for querying if flags were used
-    used_flags = rovers & MarsPhotoAPIRoverType.get_flags()
-    if used_flags:
-        if MarsPhotoAPIRoverType.ALL in used_flags:
-            rovers = MarsPhotoAPIRoverType.get_rovers()
-        else:
-            # Remove flags from rover set
-            rovers -= used_flags
-            # Add active and/or inactive rovers to rover set
-            if MarsPhotoAPIRoverType.ACTIVE in used_flags:
-                rovers |= MarsPhotoAPIRoverType.get_active_rovers()
-            if MarsPhotoAPIRoverType.INACTIVE in used_flags:
-                rovers |= MarsPhotoAPIRoverType.get_inactive_rovers()
+    rovers = _remove_rover_flags(rovers)
 
+    # Try to get metadata from Mars Photo API
     try:
         metadata = get_mars_photos_api_metadata(
             rovers, manifest, earth_date, sol)
     except Exception as e:
-        print(e)
+        print(e)  # TODO: logging
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
 

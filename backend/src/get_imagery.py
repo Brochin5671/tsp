@@ -5,7 +5,7 @@ from dateutil import parser
 from requests_cache import CachedSession
 
 from src.helpers import datetime_UTC, request_get_json, request_get_json_cached
-from src.models import EPICAPICollectionType, EPICAPIImageType, EPICImage, MarsPhotoAPICamera, MarsRover, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPICamera, MarsPhotoAPIImage, MarsPhotoAPIMetadataManifest, MarsPhotoAPIMetadata
+from src.models import EPICAPICollectionType, EPICAPIImageType, EPICImage, MarsPhotoAPICamera, MarsPhotoAPIRover, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPICamera, MarsPhotoAPIImage, MarsPhotoAPIMetadataManifest, MarsPhotoAPIMetadata
 
 
 def get_EPIC_API_images(collection: EPICAPICollectionType, series: bool, image_type: EPICAPIImageType, image_date: date | None) -> list[EPICImage]:
@@ -77,9 +77,6 @@ def _load_mars_rovers_json(rovers_only: bool = False) -> tuple[dict[str, str], d
 def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[MarsPhotoAPICameraType] | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIImage]:
     '''Returns images from Mars rovers using the Mars Photo API.'''
 
-    # Get JSON data
-    rovers_data, _ = _load_mars_rovers_json(rovers_only=True)
-
     # If earth_date and sol weren't provided, get latest photos
     endpoint = 'photos'
     if earth_date is None and sol is None:
@@ -91,10 +88,15 @@ def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[
     with CachedSession() as session:
         for rover in rovers:
 
-            # Get set of cameras to filter for by intersecting given cameras and a rover's available cameras
-            rover_cameras = {camera.lower()
-                             for camera in rovers_data[rover]['cameras']}
-            filter_cameras = cameras & rover_cameras if cameras else None
+            # Get set of cameras to filter for
+            filter_cameras = None
+            if cameras:
+                # Get JSON data
+                rovers_data, _ = _load_mars_rovers_json(rovers_only=True)
+                # Intersect given cameras and a rover's available cameras
+                rover_cameras = {camera.lower()
+                                 for camera in rovers_data[rover]['cameras']}
+                filter_cameras = cameras & rover_cameras
 
             # Call API if no cameras were provided or there are cameras to filter for
             if not cameras or filter_cameras:
@@ -102,7 +104,7 @@ def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[
                 res = request_get_json_cached(url, session, params=params)
                 data = res[endpoint]
 
-                # Extract data
+                # Extract data from image items
                 for item in data:
 
                     # Skip item if there are cameras to filter for and item's camera is not in filter
@@ -120,6 +122,7 @@ def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[
                                               earth_date=item['earth_date'],
                                               sol=item['sol'])
                     images.append(image)
+
     return images
 
 
@@ -140,7 +143,7 @@ def get_mars_photos_api_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: b
                        for camera_short in rover_data['cameras']]
             rover_data['cameras'] = cameras
             # Create metadata objects
-            rover_obj = MarsRover(**rover_data)
+            rover_obj = MarsPhotoAPIRover(**rover_data)
             metadata = MarsPhotoAPIMetadata(rover=rover_obj)
 
             # Add rover manifest to metadata if requested
@@ -179,4 +182,5 @@ def get_mars_photos_api_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: b
                 rover_obj.total_photos = data['total_photos']
 
             metadata_list.append(metadata)
+
     return metadata_list
