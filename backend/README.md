@@ -28,7 +28,7 @@ Tracking progress of the API (frontend will be its own section). Not all items a
   - [ ] Other filters
 - [ ] NASA Imagery
   - [x] Current Earth imagery
-  - [ ] Data from Mars rovers
+  - [x] Data from Mars rovers
 - [ ] Astronomy Weather
   - [ ] Light pollution estimation
   - [ ] Seeing
@@ -44,6 +44,7 @@ Tracking progress of the API (frontend will be its own section). Not all items a
   - [ ] Logger
   - [ ] Use PyPi
   - [ ] Benchmarking
+  - [ ] Linter
 
 ## Dev Setup & Installation
 
