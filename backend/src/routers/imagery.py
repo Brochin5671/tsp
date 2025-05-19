@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from datetime import date
 
-from src.models import EPICAPICollectionType, EPICAPIImageType, EPICImage, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPIImage
+from src.models import EPICAPICollectionType, EPICAPIImageType, EPICAPIImage, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPIImage
 from src.get_imagery import get_EPIC_API_images, get_mars_photos_API_images, get_mars_photos_api_metadata
 
 router = APIRouter(prefix='/imagery', tags=['imagery'])
@@ -40,11 +40,19 @@ async def get_EPIC_API(
     image_date: Annotated[date, Query(
         description='A date string in ISO 8601 format: YYYY-MM-DD',
         alias='date')] = None
-) -> list[EPICImage]:
+) -> deque[EPICAPIImage]:
     '''Returns images of Earth from NASA's EPIC API.
-    The EPIC API provides information on the daily imagery collected by DSCOVR's Earth Polychromatic Imaging Camera (EPIC) instrument. Uniquely positioned at the Earth-Sun Lagrange point, EPIC provides full disc imagery of the Earth and captures unique perspectives of certain astronomical events such as lunar transits using a 2048x2048 pixel CCD (Charge Coupled Device) detector coupled to a 30-cm aperture Cassegrain telescope. This function is intended to return images and their metadata.'''
-    images = get_EPIC_API_images(
-        collection, series, image_type, image_date)
+    The EPIC API provides information on the daily imagery collected by DSCOVR's Earth Polychromatic Imaging Camera (EPIC) instrument. Uniquely positioned at the Earth-Sun Lagrange point, EPIC provides full disc imagery of the Earth and captures unique perspectives of certain astronomical events such as lunar transits using a 2048x2048 pixel CCD (Charge Coupled Device) detector coupled to a 30-cm aperture Cassegrain telescope. The API is maintained by the NASA EPIC Team. https://epic.gsfc.nasa.gov/about/api'''
+
+    # Try to get images from EPIC API
+    try:
+        images = get_EPIC_API_images(
+            collection, series, image_type, image_date)
+    except Exception as e:
+        print(e)  # TODO: logging
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
+
     return images
 
 

@@ -4,47 +4,56 @@ import json
 from dateutil import parser
 from requests_cache import CachedSession
 
-from src.helpers import datetime_UTC, request_get_json, request_get_json_cached
-from src.models import EPICAPICollectionType, EPICAPIImageType, EPICImage, MarsPhotoAPICamera, MarsPhotoAPIRover, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPICamera, MarsPhotoAPIImage, MarsPhotoAPIMetadataManifest, MarsPhotoAPIMetadata
+from src.helpers import datetime_UTC, request_get_json_cached
+from src.models import EPICAPICollectionType, EPICAPIImageType, EPICAPIImage, MarsPhotoAPICamera, MarsPhotoAPIRover, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPICamera, MarsPhotoAPIImage, MarsPhotoAPIMetadataManifest, MarsPhotoAPIMetadata, EPICAPIGeoCoordinate, EPICAPI3DCoordinate, EPICAPIQuaternions
 
 
-def get_EPIC_API_images(collection: EPICAPICollectionType, series: bool, image_type: EPICAPIImageType, image_date: date | None) -> list[EPICImage]:
+def get_EPIC_API_images(collection: EPICAPICollectionType, series: bool, image_type: EPICAPIImageType, image_date: date | None) -> deque[EPICAPIImage]:
     '''Returns images of Earth from NASA's EPIC API.'''
-
-    # Exception handler for EPIC API call
-    def handle_EPIC_API_exception(e):
-        '''Returns an empty list on failure.'''
-        print(e)  # TODO: logging
-        return []
 
     # Call EPIC API
     url = f'https://epic.gsfc.nasa.gov/api/{collection}'
+    # Add date route if given
     if image_date is not None:
         url += f'/date/{image_date}'
-    res = request_get_json(url, exception_handler=handle_EPIC_API_exception)
-    # Return an empty list if failure to get data
+    with CachedSession() as session:
+        res = request_get_json_cached(url, session)
+
+    # Return an empty deque if response is empty
     if not res:
-        return []
+        return deque()
 
     # Get all items if user requested a series
     if series:
-        items = res
+        data = res
     else:
-        items = [res[-1]]  # latest of series
+        data = [res[-1]]  # Latest of series
 
-    # To get the URL of the image: https://epic.gsfc.nasa.gov/archive/(natural|enhanced|aersol|cloud)/YYYY/MM/DD/(png|jpg|thumbs)/<filename>
-    images = []
-    for item in items:
+    # Extract data from image items
+    images = deque()
+    for item in data:
         # Format of date in item will always be "YYYY-MM-DD HH:MM:SS"
         year = item['date'][:4]
         month = item['date'][5:7]
         day = item['date'][8:10]
+        # To get the URL of an image: https://epic.gsfc.nasa.gov/archive/(natural|enhanced|aersol|cloud)/YYYY/MM/DD/(png|jpg|thumbs)/<filename>
         image_url = f"https://epic.gsfc.nasa.gov/archive/{collection}/{year}/{month}/{day}/{image_type}/{item['image']}.{image_type}"
+        # Create objects
         ts = datetime_UTC(parser.parse(item['date'])).timestamp()
-
-        image = EPICImage(
-            image=image_url, timestamp=ts, **item['coords'])
+        sat_view = EPICAPIGeoCoordinate(**item['centroid_coordinates'])
+        sat_pos = EPICAPI3DCoordinate(**item['dscovr_j2000_position'])
+        lunar_pos = EPICAPI3DCoordinate(**item['lunar_j2000_position'])
+        sun_pos = EPICAPI3DCoordinate(**item['sun_j2000_position'])
+        sat_attitude = EPICAPIQuaternions(**item['attitude_quaternions'])
+        image = EPICAPIImage(image=image_url,
+                             timestamp=ts,
+                             dscovr_view_coordinates=sat_view,
+                             dscovr_j2000_position=sat_pos,
+                             lunar_j2000_position=lunar_pos,
+                             sun_j2000_position=sun_pos,
+                             dscovr_attitude=sat_attitude)
         images.append(image)
+
     return images
 
 
