@@ -85,3 +85,16 @@ def datetime_UTC(dt: datetime) -> AwareDatetime:
 def datetime_UTC_Week() -> AwareDatetime:
     '''Returns the datetime a week ago in UTC.'''
     return datetime.now(UTC) - timedelta(days=7)
+
+
+def flatten_dict(d: dict, parent_key: str = '', sep: str = '_') -> dict:
+    '''Flatens a dictionary including nested dictionaries.'''
+    items = {}
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.update(flatten_dict(v, new_key, sep=sep))
+        else:
+            items[new_key] = v
+
+    return items
