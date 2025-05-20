@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from datetime import date
 
 from src.models import EPICAPICollectionType, EPICAPIImageType, EPICAPIImage, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPIImage
-from src.get_imagery import get_EPIC_API_images, get_mars_photos_API_images, get_mars_photos_api_metadata
+from src.get_imagery import get_EPIC_API_images, get_mars_photos_API_images, get_mars_photos_API_metadata
 
 router = APIRouter(prefix='/imagery', tags=['imagery'])
 
@@ -105,7 +105,7 @@ async def get_mars_photos_metadata(
 
     # Try to get metadata from Mars Photo API
     try:
-        metadata = get_mars_photos_api_metadata(
+        metadata = get_mars_photos_API_metadata(
             rovers, manifest, earth_date, sol)
     except Exception as e:
         print(e)  # TODO: logging

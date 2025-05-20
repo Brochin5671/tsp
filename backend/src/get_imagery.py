@@ -135,7 +135,7 @@ def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[
     return images
 
 
-def get_mars_photos_api_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: bool | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIMetadata]:
+def get_mars_photos_API_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: bool | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIMetadata]:
     '''Returns metadata from Mars rovers (optionally photo manifests) using the Mars Photo API.'''
 
     # Get JSON data
