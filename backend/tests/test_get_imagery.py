@@ -97,9 +97,9 @@ def test_get_EPIC_API_images(get_EPIC_API_images_args):
         image_type not in image.image for image in images), f'Incorrect image type was used. {images=}'
     # Verify correct date is used if passed
     if image_date is not None:
-        '''timestamp = image_date.timestamp()
-        assert all(image.timestamp == timestamp for image in images), f'Incorrect image type was used. {images=}'''
-        pass
+        # Convert timestamp because time is included in data
+        assert not any(
+            date.fromtimestamp(image.timestamp) != image_date for image in images), f'Incorrect image_date was used. {images=}'''
 
 
 @patch('src.get_imagery.request_get_json_cached')
