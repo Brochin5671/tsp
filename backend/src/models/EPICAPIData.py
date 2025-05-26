@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 from enum import StrEnum, auto
-from typing import NamedTuple
 
 
-class EPICAPIGeoCoordinate(NamedTuple):
+@dataclass(kw_only=True)
+class EPICAPIGeoCoordinate:
     '''Class for centroid coordinates.'''
     lat: float
     lon: float
 
 
-class EPICAPI3DCoordinate(NamedTuple):
+@dataclass(kw_only=True)
+class EPICAPI3DCoordinate:
     '''Class for j2000 object positions.'''
     x: float
     y: float
