@@ -57,7 +57,7 @@ async def get_EPIC_API(
 
 
 @router.get('/mars-photo')
-async def get_mars_photos(
+async def get_mars_photo_API(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
         description='Filter for photos from specific rovers.')],
     cameras: Annotated[set[MarsPhotoAPICameraType], Query(
@@ -86,7 +86,7 @@ async def get_mars_photos(
 
 
 @router.get('/mars-photo/meta')
-async def get_mars_photos_metadata(
+async def get_mars_photo_API_metadata(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
         description='Filter for metadata from specific rovers.')] = MarsPhotoAPIRoverType.ALL,
     manifest: Annotated[bool, Query(
