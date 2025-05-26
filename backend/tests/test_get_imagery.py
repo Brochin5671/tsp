@@ -55,7 +55,7 @@ def sol_arg() -> int | None:
 
 
 @pytest.fixture
-def get_mars_photos_API_images_args(rovers_arg: set[MarsPhotoAPIRoverType], cameras_arg: set[MarsPhotoAPICameraType] | None, earth_date_arg: date | None, sol_arg: int | None) -> dict[str, Any]:
+def get_MP_API_images_args(rovers_arg: set[MarsPhotoAPIRoverType], cameras_arg: set[MarsPhotoAPICameraType] | None, earth_date_arg: date | None, sol_arg: int | None) -> dict[str, Any]:
     return {'rovers': rovers_arg,
             'cameras': cameras_arg,
             'earth_date': earth_date_arg,
@@ -68,7 +68,7 @@ def manifest_arg() -> bool | None:
 
 
 @pytest.fixture
-def get_mars_photos_API_metadata_args(rovers_arg: set[MarsPhotoAPIRoverType], manifest_arg: bool | None, earth_date_arg: date | None, sol_arg: int | None) -> dict[str, Any]:
+def get_MP_API_metadata_args(rovers_arg: set[MarsPhotoAPIRoverType], manifest_arg: bool | None, earth_date_arg: date | None, sol_arg: int | None) -> dict[str, Any]:
     return {'rovers': rovers_arg,
             'manifest': manifest_arg,
             'earth_date': earth_date_arg,
@@ -116,11 +116,11 @@ def test_get_EPIC_API_images_empty_response(mock_EPIC_API, get_EPIC_API_images_a
      ({MarsPhotoAPICameraType.SHERLOC_WATSON}, None, 1000),
      (None, date(year=2006, month=10, day=27), None)]
 )
-def test_get_mars_photos_API_images(get_mars_photos_API_images_args):
+def test_get_MP_API_images(get_MP_API_images_args):
     # Verify function can call API and return images
-    images = get_imagery.get_mars_photos_API_images(
-        **get_mars_photos_API_images_args)
-    rovers, cameras, earth_date, sol = get_mars_photos_API_images_args.values()
+    images = get_imagery.get_MP_API_images(
+        **get_MP_API_images_args)
+    rovers, cameras, earth_date, sol = get_MP_API_images_args.values()
     # Verify correct rover type is used
     assert not any(
         image.rover_name.lower() not in rovers for image in images), f'Incorrect rover type was used. {images=}'
@@ -150,11 +150,11 @@ def test_get_mars_photos_API_images(get_mars_photos_API_images_args):
       True, date(year=2006, month=10, day=27), None),
      ({MarsPhotoAPIRoverType.SPIRIT}, True, None, None)]
 )
-def test_get_mars_photos_API_metadata(get_mars_photos_API_metadata_args):
+def test_get_MP_API_metadata(get_MP_API_metadata_args):
     # Verify function can call API and return metadata
-    metadata_list = get_imagery.get_mars_photos_API_metadata(
-        **get_mars_photos_API_metadata_args)
-    rovers, manifest, earth_date, sol = get_mars_photos_API_metadata_args.values()
+    metadata_list = get_imagery.get_MP_API_metadata(
+        **get_MP_API_metadata_args)
+    rovers, manifest, earth_date, sol = get_MP_API_metadata_args.values()
     # Verify correct rover type is used
     assert not any(
         metadata.rover.name.lower() not in rovers for metadata in metadata_list), f'Incorrect rover type was used. {metadata_list=}'

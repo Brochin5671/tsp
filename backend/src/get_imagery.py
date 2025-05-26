@@ -83,7 +83,7 @@ def _load_mars_rovers_json(rovers_only: bool = False) -> tuple[dict[str, str], d
     return rovers_data, camera_mappings
 
 
-def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[MarsPhotoAPICameraType] | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIImage]:
+def get_MP_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[MarsPhotoAPICameraType] | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIImage]:
     '''Returns images from Mars rovers using the Mars Photo API.'''
 
     # If earth_date and sol weren't provided, get latest photos
@@ -135,7 +135,7 @@ def get_mars_photos_API_images(rovers: set[MarsPhotoAPIRoverType], cameras: set[
     return images
 
 
-def get_mars_photos_API_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: bool | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIMetadata]:
+def get_MP_API_metadata(rovers: set[MarsPhotoAPIRoverType], manifest: bool | None, earth_date: date | None, sol: int | None) -> deque[MarsPhotoAPIMetadata]:
     '''Returns metadata from Mars rovers (optionally photo manifests) using the Mars Photo API.'''
 
     # Get JSON data

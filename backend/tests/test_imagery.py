@@ -41,12 +41,12 @@ def mock_get_EPIC_API_images_result():
 
 
 @pytest.fixture
-def mock_get_mars_photo_API_images_result():
+def mock_get_MP_API_images_result():
     return deque([])
 
 
 @pytest.fixture
-def mock_get_mars_photo_API_metadata_result():
+def mock_get_MP_API_metadata_result():
     return deque([])
 
 
@@ -103,13 +103,13 @@ def test_get_EPIC_API(mock_fn, mock_get_EPIC_API_images_result, client: TestClie
         # Failure to get images
         ({'rovers': MarsPhotoAPIRoverType.CURIOSITY}, status.HTTP_500_INTERNAL_SERVER_ERROR)]
 )
-@patch('src.routers.imagery.get_mars_photos_API_images')
-def test_get_mars_photo_API(mock_fn, mock_get_mars_photo_API_images_result, client, params, expected_status_code):
+@patch('src.routers.imagery.get_MP_API_images')
+def test_get_mars_photo_API(mock_fn, mock_get_MP_API_images_result, client, params, expected_status_code):
     # Trigger exception if expecting an internal server error
     if expected_status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
         mock_fn.side_effect = Exception()
     else:
-        mock_fn.return_value = mock_get_mars_photo_API_images_result
+        mock_fn.return_value = mock_get_MP_API_images_result
 
     # Test endpoint
     response = client.get(f'{route}/mars-photo', params=params)
@@ -118,7 +118,7 @@ def test_get_mars_photo_API(mock_fn, mock_get_mars_photo_API_images_result, clie
     # Check if response is successful
     if expected_status_code == 200:
         assert response.json() == jsonable_encoder(
-            mock_get_mars_photo_API_images_result)
+            mock_get_MP_API_images_result)
 
 
 @pytest.mark.parametrize(
@@ -142,13 +142,13 @@ def test_get_mars_photo_API(mock_fn, mock_get_mars_photo_API_images_result, clie
         # Failure to get metadata
         ({'rovers': MarsPhotoAPIRoverType.SPIRIT}, status.HTTP_500_INTERNAL_SERVER_ERROR)]
 )
-@patch('src.routers.imagery.get_mars_photos_API_metadata')
-def test_get_mars_photo_API_metadata(mock_fn, mock_get_mars_photo_API_metadata_result, client, params, expected_status_code):
+@patch('src.routers.imagery.get_MP_API_metadata')
+def test_get_mars_photo_API_metadata(mock_fn, mock_get_MP_API_metadata_result, client, params, expected_status_code):
     # Trigger exception if expecting an internal server error
     if expected_status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
         mock_fn.side_effect = Exception()
     else:
-        mock_fn.return_value = mock_get_mars_photo_API_metadata_result
+        mock_fn.return_value = mock_get_MP_API_metadata_result
 
     # Test endpoint
     response = client.get(f'{route}/mars-photo/meta', params=params)
@@ -157,4 +157,4 @@ def test_get_mars_photo_API_metadata(mock_fn, mock_get_mars_photo_API_metadata_r
     # Check if response is successful
     if expected_status_code == 200:
         assert response.json() == jsonable_encoder(
-            mock_get_mars_photo_API_metadata_result)
+            mock_get_MP_API_metadata_result)
