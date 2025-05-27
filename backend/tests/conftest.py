@@ -1,11 +1,8 @@
 import pytest
 from src.models import Article
 from src.helpers import datetime_UTC_Week
-from fastapi.testclient import TestClient
 from unittest.mock import patch
 import requests
-
-from main import app
 
 
 @pytest.fixture
@@ -40,7 +37,8 @@ def mock_datetime():
     return datetime_UTC_Week()
 
 
-@pytest.fixture(scope='session')
-def client():
-    testClient = TestClient(app)
-    yield testClient
+@pytest.fixture
+def mock_request_get_json_cached():
+    with patch('src.helpers.request_get_json_cached') as mock:
+        mock.return_value = None
+        yield
