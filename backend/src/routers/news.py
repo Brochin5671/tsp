@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import AwareDatetime
 
 from src.helpers import datetime_UTC_Week
@@ -18,7 +18,14 @@ async def get_space_news(
             ge=0)] = 10
 ) -> list[Article]:
     '''Returns articles on space industry and/or science news.'''
-    articles = get_all_articles(earliestDatetime, limit)
+    # Try to get articles
+    try:
+        articles = get_all_articles(earliestDatetime, limit)
+    except Exception as e:
+        print(e)  # TODO: logging
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
+
     return articles
 
 
@@ -31,7 +38,14 @@ async def get_space_industry_news(
             ge=0)] = 10
 ) -> list[Article]:
     '''Returns articles on space industry news.'''
-    articles = get_industry_articles(earliestDatetime, limit)
+    # Try to get articles
+    try:
+        articles = get_industry_articles(earliestDatetime, limit)
+    except Exception as e:
+        print(e)  # TODO: logging
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
+
     return articles
 
 
@@ -44,5 +58,12 @@ async def get_space_science_news(
             ge=0)] = 10
 ) -> list[Article]:
     '''Returns articles on space science news.'''
-    articles = get_science_articles(earliestDatetime, limit)
+    # Try to get articles
+    try:
+        articles = get_science_articles(earliestDatetime, limit)
+    except Exception as e:
+        print(e)  # TODO: logging
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Something went wrong on our end, please try again later.')
+
     return articles
