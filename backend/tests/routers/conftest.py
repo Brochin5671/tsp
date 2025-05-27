@@ -23,6 +23,42 @@ class PytestParamRouter(PytestParam):
 
 
 # Test cases for each test function
+_GET_SPACE_NEWS_TESTS = [
+    PytestParamRouter(label='Default arguments', mock_fn=('space_news', None, None),
+                      expected_status_code=status.HTTP_200_OK),
+    PytestParamRouter(label='Invalid earliestDatetime', mock_fn=('space_news', None, None), params={'earliestDatetime': 'invalid'},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Invalid limit', mock_fn=('space_news', None, None), params={'limit': 'invalid'},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Invalid limit: limit >= 0 constraint', mock_fn=('space_news', None, None), params={'limit': -1},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Failure', mock_fn=('space_news', None, Exception()),
+                      expected_status_code=status.HTTP_500_INTERNAL_SERVER_ERROR),
+]
+_GET_SPACE_INDUSTRY_NEWS_TESTS = [
+    PytestParamRouter(label='Default arguments', mock_fn=('space_industry_news', None, None),
+                      expected_status_code=status.HTTP_200_OK),
+    PytestParamRouter(label='Invalid earliestDatetime', mock_fn=('space_industry_news', None, None), params={'earliestDatetime': 'invalid'},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Invalid limit', mock_fn=('space_industry_news', None, None), params={'limit': 'invalid'},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Invalid limit: limit >= 0 constraint', mock_fn=('space_industry_news', None, None), params={'limit': -1},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Failure', mock_fn=('space_industry_news', None, Exception()),
+                      expected_status_code=status.HTTP_500_INTERNAL_SERVER_ERROR),
+]
+_GET_SPACE_SCIENCE_NEWS_TESTS = [
+    PytestParamRouter(label='Default arguments', mock_fn=('space_science_news', None, None),
+                      expected_status_code=status.HTTP_200_OK),
+    PytestParamRouter(label='Invalid earliestDatetime', mock_fn=('space_science_news', None, None), params={'earliestDatetime': 'invalid'},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Invalid limit', mock_fn=('space_science_news', None, None), params={'limit': 'invalid'},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Invalid limit: limit >= 0 constraint', mock_fn=('space_science_news', None, None), params={'limit': -1},
+                      expected_status_code=status.HTTP_422_UNPROCESSABLE_ENTITY),
+    PytestParamRouter(label='Failure', mock_fn=('space_science_news', None, Exception()),
+                      expected_status_code=status.HTTP_500_INTERNAL_SERVER_ERROR),
+]
 _GET_EPIC_API_TESTS = [
     PytestParamRouter(label='Default arguments', mock_fn=('EPIC_API', None, None),
                       expected_status_code=status.HTTP_200_OK),
@@ -74,6 +110,15 @@ _GET_MARS_PHOTO_API_METADATA_TESTS = [
 
 # Configurations for each test function
 _TEST_CONFIGS = {
+    'test_get_space_news': {
+        'tests': _GET_SPACE_NEWS_TESTS
+    },
+    'test_get_space_industry_news': {
+        'tests': _GET_SPACE_INDUSTRY_NEWS_TESTS
+    },
+    'test_get_space_science_news': {
+        'tests': _GET_SPACE_SCIENCE_NEWS_TESTS
+    },
     'test_get_EPIC_API': {
         'tests': _GET_EPIC_API_TESTS,
     },
@@ -87,6 +132,9 @@ _TEST_CONFIGS = {
 
 # Using a label, maps to the path of each target function for mocking
 _FN_PATHS = {
+    'space_news': 'src.routers.news.get_all_articles',
+    'space_industry_news': 'src.routers.news.get_industry_articles',
+    'space_science_news': 'src.routers.news.get_science_articles',
     'EPIC_API': 'src.routers.imagery.get_EPIC_API_images',
     'MP_API': 'src.routers.imagery.get_MP_API_images',
     'MP_API_meta': 'src.routers.imagery.get_MP_API_metadata'

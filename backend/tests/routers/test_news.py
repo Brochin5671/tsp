@@ -1,29 +1,21 @@
-from unittest.mock import patch
+from fastapi.testclient import TestClient
 
-from fastapi.encoders import jsonable_encoder
-
-route = 'news'
+_ROUTE = 'news'
 
 
-@patch('src.routers.news.get_all_articles')
-def test_get_space_news(mock_get_all_articles, mock_articles_result, test_client):
-    mock_get_all_articles.return_value = mock_articles_result
-    response = test_client.get(f'{route}/')
-    assert response.status_code == 200
-    assert response.json() == jsonable_encoder(mock_articles_result)
+def test_get_space_news(mock_fn, params: dict | None, expected_status_code: int, test_client: TestClient):
+    url = f'{_ROUTE}'
+    response = test_client.get(url, params=params)
+    assert response.status_code == expected_status_code
 
 
-@patch('src.routers.news.get_industry_articles')
-def test_get_space_industry_news(mock_get_industry_articles, mock_articles_result, test_client):
-    mock_get_industry_articles.return_value = mock_articles_result
-    response = test_client.get(f'{route}/industry/')
-    assert response.status_code == 200
-    assert response.json() == jsonable_encoder(mock_articles_result)
+def test_get_space_industry_news(mock_fn, params: dict | None, expected_status_code: int, test_client: TestClient):
+    url = f'{_ROUTE}/industry'
+    response = test_client.get(url, params=params)
+    assert response.status_code == expected_status_code
 
 
-@patch('src.routers.news.get_science_articles')
-def test_get_space_science_news(mock_get_science_articles, mock_articles_result, test_client):
-    mock_get_science_articles.return_value = mock_articles_result
-    response = test_client.get(f'{route}/science/')
-    assert response.status_code == 200
-    assert response.json() == jsonable_encoder(mock_articles_result)
+def test_get_space_science_news(mock_fn, params: dict | None, expected_status_code: int, test_client: TestClient):
+    url = f'{_ROUTE}/science'
+    response = test_client.get(url, params=params)
+    assert response.status_code == expected_status_code
