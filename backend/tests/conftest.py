@@ -1,8 +1,26 @@
+from dataclasses import dataclass
+from typing import Any
 import pytest
 from src.models import Article
 from src.helpers import datetime_UTC_Week
 from unittest.mock import patch
 import requests
+
+
+@dataclass(kw_only=True)
+class PytestParam:
+    '''Dataclass that contains information for the `pytest.param` function.'''
+    label: str | None = None
+    # TODO: add marks
+
+    def to_parameter_set(self):
+        '''Create a `ParameterSet` object for parameterizing.'''
+        return pytest.param(id=self.label)
+
+
+def create_parameter_set_list(tests: list[PytestParam]):
+    '''Create a `ParameterSet` list using the `PytestParam` object's `to_parameter_set` method.'''
+    return [test.to_parameter_set() for test in tests]
 
 
 @pytest.fixture
