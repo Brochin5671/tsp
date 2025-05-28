@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any
 from src.models import EPICAPICollectionType, EPICAPIImageType, MarsPhotoAPIRoverType, MarsPhotoAPICameraType
-import src.apis.get_imagery as get_imagery
+from src.apis import get_EPIC_API_images, get_MP_API_images, get_MP_API_metadata
 from unittest.mock import patch
 import pytest
 
@@ -88,7 +88,7 @@ def get_MP_API_metadata_args(rovers_arg: set[MarsPhotoAPIRoverType], manifest_ar
 )
 def test_get_EPIC_API_images(get_EPIC_API_images_args):
     # Verify function can call API and return images
-    images = get_imagery.get_EPIC_API_images(**get_EPIC_API_images_args)
+    images = get_EPIC_API_images(**get_EPIC_API_images_args)
     assert images, '"get_EPIC_API_images()" must return a non-empty deque.'
     collection, series, image_type, image_date = get_EPIC_API_images_args.values()
     # Verify correct collection type is used
@@ -107,10 +107,10 @@ def test_get_EPIC_API_images(get_EPIC_API_images_args):
             date.fromtimestamp(image.timestamp) != image_date for image in images), f'Incorrect image_date was used. {images=}'''
 
 
-@patch('src.get_imagery.request_get_json_cached')
+@patch('src.apis.get_imagery.request_get_json_cached')
 def test_get_EPIC_API_images_empty_response(mock_EPIC_API, get_EPIC_API_images_args):
     mock_EPIC_API.return_value = []
-    images = get_imagery.get_EPIC_API_images(**get_EPIC_API_images_args)
+    images = get_EPIC_API_images(**get_EPIC_API_images_args)
     assert not images, '"get_EPIC_API_images()" must return an empty deque.'
 
 
@@ -129,7 +129,7 @@ def test_get_EPIC_API_images_empty_response(mock_EPIC_API, get_EPIC_API_images_a
 )
 def test_get_MP_API_images(get_MP_API_images_args):
     # Verify function can call API and return images
-    images = get_imagery.get_MP_API_images(
+    images = get_MP_API_images(
         **get_MP_API_images_args)
     rovers, cameras, earth_date, sol = get_MP_API_images_args.values()
     # Verify correct rover type is used
@@ -169,7 +169,7 @@ def test_get_MP_API_images(get_MP_API_images_args):
 )
 def test_get_MP_API_metadata(get_MP_API_metadata_args):
     # Verify function can call API and return metadata
-    metadata_list = get_imagery.get_MP_API_metadata(
+    metadata_list = get_MP_API_metadata(
         **get_MP_API_metadata_args)
     rovers, manifest, earth_date, sol = get_MP_API_metadata_args.values()
     # Verify correct rover type is used
