@@ -1,4 +1,4 @@
-import src.get_articles as get_articles
+import src.apis.get_articles as get_articles
 from unittest.mock import patch
 
 

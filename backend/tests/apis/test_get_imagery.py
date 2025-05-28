@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any
 from src.models import EPICAPICollectionType, EPICAPIImageType, MarsPhotoAPIRoverType, MarsPhotoAPICameraType
-import src.get_imagery as get_imagery
+import src.apis.get_imagery as get_imagery
 from unittest.mock import patch
 import pytest
 
@@ -77,9 +77,14 @@ def get_MP_API_metadata_args(rovers_arg: set[MarsPhotoAPIRoverType], manifest_ar
 
 @pytest.mark.parametrize(
     'series_arg, image_date_arg',
-    [(True, None),
-     (False, None),
-     (False, date(year=2025, month=5, day=18))]
+    [
+        # series is true
+        (True, None),
+        # series is false
+        (False, None),
+        # image_date is set
+        (False, date(year=2025, month=5, day=18))
+    ]
 )
 def test_get_EPIC_API_images(get_EPIC_API_images_args):
     # Verify function can call API and return images
@@ -111,10 +116,16 @@ def test_get_EPIC_API_images_empty_response(mock_EPIC_API, get_EPIC_API_images_a
 
 @pytest.mark.parametrize(
     'cameras_arg, earth_date_arg, sol_arg',
-    [(None, None, None),
-     ({MarsPhotoAPICameraType.PANCAM}, None, 1000),
-     ({MarsPhotoAPICameraType.SHERLOC_WATSON}, None, 1000),
-     (None, date(year=2006, month=10, day=27), None)]
+    [
+        # Default function call
+        (None, None, None),
+        # Use camera that is common and sol is set
+        ({MarsPhotoAPICameraType.PANCAM}, None, 1000),
+        # Use camera that isn't common and sol is set
+        ({MarsPhotoAPICameraType.SHERLOC_WATSON}, None, 1000),
+        (None, date(year=2006, month=10, day=27), None)
+        # earth_date is set
+    ]
 )
 def test_get_MP_API_images(get_MP_API_images_args):
     # Verify function can call API and return images
@@ -144,11 +155,17 @@ def test_get_MP_API_images(get_MP_API_images_args):
 
 @pytest.mark.parametrize(
     'rovers_arg, manifest_arg, earth_date_arg, sol_arg',
-    [(MarsPhotoAPIRoverType.get_active_rovers(), False, None, None),
-     (MarsPhotoAPIRoverType.get_inactive_rovers(), True, None, 1000),
-     (MarsPhotoAPIRoverType.get_inactive_rovers(),
-      True, date(year=2006, month=10, day=27), None),
-     ({MarsPhotoAPIRoverType.SPIRIT}, True, None, None)]
+    [
+        # Default call to function
+        (MarsPhotoAPIRoverType.get_active_rovers(), False, None, None),
+        # Inactive rovers, manifest is true and sol is set
+        (MarsPhotoAPIRoverType.get_inactive_rovers(), True, None, 1000),
+        # Inactive rovers, manifest is true and earth_date is set
+        (MarsPhotoAPIRoverType.get_inactive_rovers(),
+            True, date(year=2006, month=10, day=27), None),
+        # Spirit rover and manifest is true
+        ({MarsPhotoAPIRoverType.SPIRIT}, True, None, None)
+    ]
 )
 def test_get_MP_API_metadata(get_MP_API_metadata_args):
     # Verify function can call API and return metadata
