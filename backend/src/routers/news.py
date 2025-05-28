@@ -4,7 +4,7 @@ from pydantic import AwareDatetime
 
 from src.helpers import datetime_UTC_Week
 from src.models import Article
-from src.get_articles import get_all_articles, get_industry_articles, get_science_articles
+from src.apis import get_all_articles, get_industry_articles, get_science_articles
 
 router = APIRouter(prefix='/news', tags=['news'])
 

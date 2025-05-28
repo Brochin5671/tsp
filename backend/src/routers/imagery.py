@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from datetime import date
 
 from src.models import EPICAPICollectionType, EPICAPIImageType, EPICAPIImage, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPIImage
-from src.get_imagery import get_EPIC_API_images, get_MP_API_images, get_MP_API_metadata
+from src.apis import get_EPIC_API_images, get_MP_API_images, get_MP_API_metadata
 
 router = APIRouter(prefix='/imagery', tags=['imagery'])
 

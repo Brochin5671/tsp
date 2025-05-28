@@ -3,9 +3,9 @@ from datetime import datetime
 
 from pydantic import AwareDatetime
 
-from .models import Article
+from src.models import Article
 from dateutil import parser
-from .helpers import request_get_json, datetime_UTC, REQUEST_HEADERS, request_get_json_cached
+from src.helpers import request_get_json, datetime_UTC, REQUEST_HEADERS, request_get_json_cached
 from itertools import chain
 from requests_cache import CachedSession
 
