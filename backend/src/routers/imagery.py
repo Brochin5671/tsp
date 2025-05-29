@@ -59,7 +59,7 @@ async def get_EPIC_API(
 @router.get('/mars-photo')
 async def get_mars_photo_API(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
-        description='Filter for photos from specific rovers.')],
+        description='Filter for photos from specific rovers.')] = {MarsPhotoAPIRoverType.ALL},
     cameras: Annotated[set[MarsPhotoAPICameraType], Query(
         description='Filter for photos from specific rover cameras (picks from a specific day).')] = None,
     earth_date: Annotated[date, Query(
@@ -88,7 +88,7 @@ async def get_mars_photo_API(
 @router.get('/mars-photo/meta')
 async def get_mars_photo_API_metadata(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
-        description='Filter for metadata from specific rovers.')] = MarsPhotoAPIRoverType.ALL,
+        description='Filter for metadata from specific rovers.')] = {MarsPhotoAPIRoverType.ALL},
     manifest: Annotated[bool, Query(
         description='To return photo manifests with metadata.')] = None,
     earth_date: Annotated[date, Query(
@@ -105,8 +105,7 @@ async def get_mars_photo_API_metadata(
 
     # Try to get metadata from Mars Photo API
     try:
-        metadata = get_MP_API_metadata(
-            rovers, manifest, earth_date, sol)
+        metadata = get_MP_API_metadata(rovers, manifest, earth_date, sol)
     except Exception as e:
         print(e)  # TODO: logging
         raise HTTPException(
