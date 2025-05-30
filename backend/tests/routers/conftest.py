@@ -10,6 +10,7 @@ import pytest
 
 @dataclass(kw_only=True)
 class RouterTestCase(TestCase):
+    '''Dataclass that extends `TestCase` for testing with FastAPI's `TestClient`.'''
     params: dict[str, Any] | None = None
     mock_fns: MockFunction | Collection[MockFunction]
     expected_status_code: int = status.HTTP_200_OK
