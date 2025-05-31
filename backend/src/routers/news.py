@@ -11,7 +11,7 @@ router = APIRouter(prefix='/news', tags=['news'])
 
 @router.get('/')
 async def get_space_news(
-        earliestDatetime: Annotated[AwareDatetime, Query(
+        earliest_datetime: Annotated[AwareDatetime, Query(
             description="ISO-8601 timezone-aware datetime string for returning articles after this datetime.")] = datetime_UTC_Week(),
         limit: Annotated[int, Query(
             description="Amount of articles to return.",
@@ -20,7 +20,7 @@ async def get_space_news(
     '''Returns articles on space industry and/or science news.'''
     # Try to get articles
     try:
-        articles = get_all_articles(earliestDatetime, limit)
+        articles = get_all_articles(earliest_datetime, limit)
     except Exception as e:
         print(e)  # TODO: logging
         raise HTTPException(
@@ -31,7 +31,7 @@ async def get_space_news(
 
 @router.get('/industry')
 async def get_space_industry_news(
-        earliestDatetime: Annotated[AwareDatetime, Query(
+        earliest_datetime: Annotated[AwareDatetime, Query(
             description="ISO-8601 timezone-aware datetime string for returning articles after this datetime.")] = datetime_UTC_Week(),
         limit: Annotated[int, Query(
             description="Amount of articles to return.",
@@ -40,7 +40,7 @@ async def get_space_industry_news(
     '''Returns articles on space industry news.'''
     # Try to get articles
     try:
-        articles = get_industry_articles(earliestDatetime, limit)
+        articles = get_industry_articles(earliest_datetime, limit)
     except Exception as e:
         print(e)  # TODO: logging
         raise HTTPException(
@@ -51,7 +51,7 @@ async def get_space_industry_news(
 
 @router.get('/science')
 async def get_space_science_news(
-        earliestDatetime: Annotated[AwareDatetime, Query(
+        earliest_datetime: Annotated[AwareDatetime, Query(
             description="ISO-8601 timezone-aware datetime string for returning articles after this datetime.")] = datetime_UTC_Week(),
         limit: Annotated[int, Query(
             description="Amount of articles to return.",
@@ -60,7 +60,7 @@ async def get_space_science_news(
     '''Returns articles on space science news.'''
     # Try to get articles
     try:
-        articles = get_science_articles(earliestDatetime, limit)
+        articles = get_science_articles(earliest_datetime, limit)
     except Exception as e:
         print(e)  # TODO: logging
         raise HTTPException(

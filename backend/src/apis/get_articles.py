@@ -10,13 +10,13 @@ from itertools import chain
 from requests_cache import CachedSession
 
 
-def get_SNAPI_articles(earliestDatetime: str) -> list[Article]:
+def get_SNAPI_articles(earliest_datetime: str) -> list[Article]:
     '''Return extracted industry news articles from SNAPI.'''
 
     # Get industry space news articles from SNAPI call
     url = 'https://api.spaceflightnewsapi.net/v4/articles'
     # published_at_gte refers to all documents published after a given ISO8601 timestamp (included)
-    params = {'published_at_gte': earliestDatetime, 'limit': 20}
+    params = {'published_at_gte': earliest_datetime, 'limit': 20}
     with CachedSession() as session:
         results = request_get_json_cached(url, session, params=params)
 
@@ -46,7 +46,7 @@ def get_SNAPI_articles(earliestDatetime: str) -> list[Article]:
     return articles
 
 
-def get_physorg_articles(earliestDatetime: AwareDatetime) -> list[Article]:
+def get_physorg_articles(earliest_datetime: AwareDatetime) -> list[Article]:
     '''Scrapes phys.org RSS feeds and returns a list of articles.'''
 
     def _get_physorg_items(url: str, session: CachedSession) -> ResultSet:
@@ -70,7 +70,7 @@ def get_physorg_articles(earliestDatetime: AwareDatetime) -> list[Article]:
 
     # Extract data from items
     articleDict = {}
-    earliest = datetime_UTC(earliestDatetime)
+    earliest = datetime_UTC(earliest_datetime)
     for item in items:
         # Skip if article has already been extracted
         if item.guid.text in articleDict:
@@ -102,28 +102,28 @@ def get_physorg_articles(earliestDatetime: AwareDatetime) -> list[Article]:
     return articles
 
 
-def get_industry_articles(earliestDatetime: AwareDatetime, limit: int | None = None):
+def get_industry_articles(earliest_datetime: AwareDatetime, limit: int | None = None):
     '''Aggregates and returns space industry news articles.'''
-    SNAPIArticles = get_SNAPI_articles(earliestDatetime)
+    SNAPIArticles = get_SNAPI_articles(earliest_datetime)
     articles = list(chain(SNAPIArticles))
     return sorted(articles,
                   key=lambda x: x.timestamp,
                   reverse=True)[:limit]
 
 
-def get_science_articles(earliestDatetime: AwareDatetime, limit: int | None = None) -> list[Article]:
+def get_science_articles(earliest_datetime: AwareDatetime, limit: int | None = None) -> list[Article]:
     '''Aggregates and returns space science news articles.'''
-    physOrgArticles = get_physorg_articles(earliestDatetime)
+    physOrgArticles = get_physorg_articles(earliest_datetime)
     articles = list(chain(physOrgArticles))
     return sorted(articles,
                   key=lambda x: x.timestamp,
                   reverse=True)[:limit]
 
 
-def get_all_articles(earliestDatetime: AwareDatetime, limit: int | None = None):
+def get_all_articles(earliest_datetime: AwareDatetime, limit: int | None = None):
     '''Aggregates and returns all space news articles.'''
-    industryArticles = get_industry_articles(earliestDatetime)
-    scienceArticles = get_science_articles(earliestDatetime)
+    industryArticles = get_industry_articles(earliest_datetime)
+    scienceArticles = get_science_articles(earliest_datetime)
     articles = list(chain(industryArticles, scienceArticles))
     return sorted(articles,
                   key=lambda x: x.timestamp,
