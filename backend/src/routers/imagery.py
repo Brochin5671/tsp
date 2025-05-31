@@ -34,7 +34,7 @@ async def get_EPIC_API(
     collection: Annotated[EPICAPICollectionType, Query(
         description='Kind of imagery to return: natural or enhanced, aersol index, or cloud fraction imagery.')] = EPICAPICollectionType.NATURAL,
     series: Annotated[bool, Query(
-        description='To return a series or a single image. Will return the latest of the series if single.')] = None,
+        description='To return a series or a single image. Will return the latest of the series if single.')] = False,
     image_type: Annotated[EPICAPIImageType, Query(
         description='Image type for imagery resolution.')] = EPICAPIImageType.PNG,
     image_date: Annotated[date, Query(
