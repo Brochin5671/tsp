@@ -10,7 +10,13 @@ import pytest
 
 @dataclass(kw_only=True)
 class RouterTestCase(TestCase):
-    '''Dataclass that extends `TestCase` for testing with FastAPI's `TestClient`.'''
+    '''Dataclass that extends `TestCase` for testing with FastAPI's `TestClient`.
+        Attributes:
+            params (dict[str, Any]): Query parameters, usually for a `GET` request.
+            mock_fns (MockFunction | Collection[MockFunction]): 3-tuple values of one or more functions to be mocked, usually a mock API call.
+            expected_status_code (int = status.HTTP_200_OK): the status code that the test function expects.
+            is_invalid (bool = False): If set to True, sets `expected_status_code` to `status.HTTP_422_UNPROCESSABLE_ENTITY`. Means the query parameters are expected to be invalid.
+    '''
     params: dict[str, Any] | None = None
     mock_fns: MockFunction | Collection[MockFunction]
     expected_status_code: int = status.HTTP_200_OK
@@ -20,7 +26,6 @@ class RouterTestCase(TestCase):
         set[str]] = TestCase._excluded_fields | {'is_invalid'}
 
     def __post_init__(self):
-
         # Set expected_status_code if testing for invalid parameter
         if self.is_invalid:
             self.expected_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
