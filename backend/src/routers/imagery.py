@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from datetime import date
 
-from src.models import EPICAPICollectionType, EPICAPIImageType, EPICAPIImage, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPIImage
-from src.apis import get_EPIC_API_images, get_MP_API_images, get_MP_API_metadata
+from src.models import EPICAPICollectionType, EPICAPIImageType, EPICAPIImage, MarsPhotoAPIRoverType, MarsPhotoAPICameraType, MarsPhotoAPIImage, MARS_PHOTO_API_DATA
+from src.apis import get_EPIC_API_images, get_mars_photo_API_images, get_mars_photo_API_metadata
 
 router = APIRouter(prefix='/imagery', tags=['imagery'])
 
@@ -14,17 +14,23 @@ def _remove_rover_flags(rovers: set[MarsPhotoAPIRoverType]):
     '''Removes flags and updates the rover set.'''
     # Modify rover set used for querying if flags were used
     used_flags = rovers & MarsPhotoAPIRoverType.get_flags()
-    if used_flags:
-        if MarsPhotoAPIRoverType.ALL in used_flags:
-            rovers = MarsPhotoAPIRoverType.get_rovers()
-        else:
-            # Remove flags from rover set
-            rovers -= used_flags
-            # Add active and/or inactive rovers to rover set
-            if MarsPhotoAPIRoverType.ACTIVE in used_flags:
-                rovers |= MarsPhotoAPIRoverType.get_active_rovers()
-            if MarsPhotoAPIRoverType.INACTIVE in used_flags:
-                rovers |= MarsPhotoAPIRoverType.get_inactive_rovers()
+
+    # Don't modify rover set
+    if not used_flags:
+        return rovers
+
+    # Add all rovers
+    if MarsPhotoAPIRoverType.ALL in used_flags:
+        return MarsPhotoAPIRoverType.get_rovers()
+
+    # Remove flags from rover set
+    rovers -= used_flags
+
+    # Add active and/or inactive rovers to rover set
+    if MarsPhotoAPIRoverType.ACTIVE in used_flags:
+        rovers |= MarsPhotoAPIRoverType.get_active_rovers()
+    if MarsPhotoAPIRoverType.INACTIVE in used_flags:
+        rovers |= MarsPhotoAPIRoverType.get_inactive_rovers()
 
     return rovers
 
@@ -59,7 +65,7 @@ async def get_EPIC_API(
 @router.get('/mars-photo')
 async def get_mars_photo_API(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
-        description='Filter for photos from specific rovers.')] = {MarsPhotoAPIRoverType.ALL},
+        description='Filter for photos from specific rovers.')] = MarsPhotoAPIRoverType.get_rovers(),
     cameras: Annotated[set[MarsPhotoAPICameraType], Query(
         description='Filter for photos from specific rover cameras (picks from a specific day).')] = None,
     earth_date: Annotated[date, Query(
@@ -74,9 +80,24 @@ async def get_mars_photo_API(
     # Modify rover set used for querying if flags were used
     rovers = _remove_rover_flags(rovers)
 
+    # Check if selected cameras are in any selected rover
+    if cameras:
+        # Get all cameras from all selected rovers as a set
+        rover_cameras = set()
+        rover_configs = MARS_PHOTO_API_DATA['rovers'].items()
+        for rover_name, rover_values in rover_configs:
+            if rover_name in rovers:
+                rover_cameras |= rover_values['cameras']
+        # Filter out cameras by intersecting selected and all camera sets
+        result = cameras & rover_cameras
+        # Return not found if no selected cameras in any selected rover
+        if not result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f'There are no selected cameras in any of the selected rovers')
+
     # Try to get images from Mars Photo API
     try:
-        images = get_MP_API_images(rovers, cameras, earth_date, sol)
+        images = get_mars_photo_API_images(rovers, cameras, earth_date, sol)
     except Exception as e:
         print(e)  # TODO: logging
         raise HTTPException(
@@ -88,7 +109,7 @@ async def get_mars_photo_API(
 @router.get('/mars-photo/meta')
 async def get_mars_photo_API_metadata(
     rovers: Annotated[set[MarsPhotoAPIRoverType], Query(
-        description='Filter for metadata from specific rovers.')] = {MarsPhotoAPIRoverType.ALL},
+        description='Filter for metadata from specific rovers.')] = MarsPhotoAPIRoverType.get_rovers(),
     manifest: Annotated[bool, Query(
         description='To return photo manifests with metadata.')] = None,
     earth_date: Annotated[date, Query(
@@ -105,7 +126,8 @@ async def get_mars_photo_API_metadata(
 
     # Try to get metadata from Mars Photo API
     try:
-        metadata = get_MP_API_metadata(rovers, manifest, earth_date, sol)
+        metadata = get_mars_photo_API_metadata(
+            rovers, manifest, earth_date, sol)
     except Exception as e:
         print(e)  # TODO: logging
         raise HTTPException(
