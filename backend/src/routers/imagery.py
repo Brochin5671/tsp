@@ -87,7 +87,7 @@ async def get_mars_photo_API(
         rover_configs = MARS_PHOTO_API_DATA['rovers'].items()
         for rover_name, rover_values in rover_configs:
             if rover_name in rovers:
-                rover_cameras |= rover_values['cameras']
+                rover_cameras |= rover_values['camera_names']
         # Filter out cameras by intersecting selected and all camera sets
         result = cameras & rover_cameras
         # Return not found if no selected cameras in any selected rover
